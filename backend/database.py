@@ -7,7 +7,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg://postgres:password@localhost:5432/medtrack",
+    "postgresql+psycopg://postgres:Kings#21@localhost:5432/medtrack",
 )
 
 engine = create_engine(DATABASE_URL, echo=False)
