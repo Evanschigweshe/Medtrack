@@ -2,6 +2,8 @@ from datetime import datetime
 from sqlalchemy import DateTime, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
+from datetime import date
+from sqlalchemy import Date
 
 class Item(Base):
     __tablename__ = "items"
@@ -11,7 +13,7 @@ class Item(Base):
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     barcode: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, default=0)
-    expiry: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    expiry: Mapped[date | None] = mapped_column(Date, nullable=True)
     reorder_level: Mapped[int] = mapped_column(Integer, default=5)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -37,3 +39,4 @@ class Alert(Base):
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id"), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+

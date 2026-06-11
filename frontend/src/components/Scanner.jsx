@@ -4,6 +4,7 @@ export default function Scanner({ items, activity, onAddItem, onStockAction }) {
   const [action, setAction] = useState('in');
   const [barcode, setBarcode] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [expiryError, setExpiryError] = useState('');
   const [form, setForm] = useState({
     name: '',
     category: 'Medicine',
@@ -25,10 +26,56 @@ export default function Scanner({ items, activity, onAddItem, onStockAction }) {
     setQuantity(1);
   }
 
+function monthToExpiryDate(monthValue) {
+  if (!monthValue) return null;
+
+  const [year, month] = monthValue.split('-').map(Number);
+
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+
+  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+    throw new Error(
+      `Expiry date cannot be earlier than ${currentYear}-${String(currentMonth).padStart(2, '0')}`
+    );
+  }
+
+  if (year > currentYear + 20) {
+    throw new Error('Expiry year appears invalid');
+  }
+
+  const lastDay = new Date(year, month, 0).getDate();
+
+  return `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+}
+ 
+
   async function submitNewItem(event) {
-    event.preventDefault();
-    await onAddItem({ ...form, quantity: Number(form.quantity), reorder_level: Number(form.reorder_level) });
-    setForm({ name: '', category: 'Medicine', barcode: '', quantity: 10, expiry: '', reorder_level: 5 });
+  event.preventDefault();
+
+    try {
+      setExpiryError('');
+
+      await onAddItem({
+        ...form,
+        quantity: Number(form.quantity),
+        reorder_level: Number(form.reorder_level),
+        expiry: monthToExpiryDate(form.expiry),
+      });
+
+      setForm({
+        name: '',
+        category: 'Medicine',
+        barcode: '',
+        quantity: 10,
+        expiry: '',
+        reorder_level: 5,
+      });
+
+    } catch (error) {
+      setExpiryError(error.message);
+    }
   }
 
   return (
@@ -73,7 +120,8 @@ export default function Scanner({ items, activity, onAddItem, onStockAction }) {
           <label>Initial Quantity</label>
           <input type="number" min="0" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
           <label>Expiry</label>
-          <input value={form.expiry} onChange={(e) => setForm({ ...form, expiry: e.target.value })} placeholder="MM/YYYY" />
+          <input type="month" min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`} value={form.expiry} onChange={(e) => setForm({ ...form, expiry: e.target.value })}/>
+          {expiryError && (<div className="error-message">{expiryError}</div>)}
           <label>Reorder Level</label>
           <input type="number" min="1" value={form.reorder_level} onChange={(e) => setForm({ ...form, reorder_level: e.target.value })} />
           <button className="primary" type="submit">Add Item</button>
