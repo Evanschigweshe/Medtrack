@@ -1,14 +1,25 @@
-from datetime import datetime
-from sqlalchemy import DateTime, Integer, String, Text, ForeignKey
+from datetime import datetime, date
+from sqlalchemy import DateTime, Integer, String, Text, ForeignKey, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
-from datetime import date
-from sqlalchemy import Date
+
+
+class Facility(Base):
+    __tablename__ = "facilities"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
 
 class Item(Base):
     __tablename__ = "items"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    facility_id: Mapped[int] = mapped_column(ForeignKey("facilities.id"),nullable=False)
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     barcode: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
@@ -16,13 +27,13 @@ class Item(Base):
     expiry: Mapped[date | None] = mapped_column(Date, nullable=True)
     reorder_level: Mapped[int] = mapped_column(Integer, default=5)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
     transactions: Mapped[list["Transaction"]] = relationship(back_populates="item")
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    facility_id: Mapped[int] = mapped_column(ForeignKey("facilities.id"),nullable=False)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id"), nullable=False)
     action: Mapped[str] = mapped_column(String(20), nullable=False)  # check_in, check_out, adjust
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -36,7 +47,10 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    facility_id: Mapped[int] = mapped_column(ForeignKey("facilities.id"),nullable=False)
     item_id: Mapped[int] = mapped_column(ForeignKey("items.id"), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
+    
+    
+    

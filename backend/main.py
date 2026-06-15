@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from database import Base, engine
 from routers import items, inventory, alerts
+from routers import auth
 
 load_dotenv()
 Base.metadata.create_all(bind=engine)
@@ -22,6 +23,7 @@ app.add_middleware(
 app.include_router(items.router)
 app.include_router(inventory.router)
 app.include_router(alerts.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def health_check():
