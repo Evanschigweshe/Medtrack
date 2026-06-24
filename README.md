@@ -1,4 +1,4 @@
-# MedTrack MVP
+# MedProof inventory
 
 Architecture:
 
